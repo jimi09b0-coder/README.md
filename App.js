@@ -3,13 +3,30 @@ import {
   SafeAreaView,
   View,
   Text,
+  TextInput,
   TouchableOpacity,
   StyleSheet,
   ScrollView,
 } from "react-native";
 
+import { jobs } from "./jobs";
+
 export default function App() {
   const [page, setPage] = useState("home");
+  const [search, setSearch] = useState("");
+  const [selectedJob, setSelectedJob] = useState(null);
+
+  const filteredJobs = jobs.filter((job) => {
+    const text =
+      `${job.title} ${job.country} ${job.city} ${job.category}`.toLowerCase();
+
+    return text.includes(search.toLowerCase());
+  });
+
+  const openJob = (job) => {
+    setSelectedJob(job);
+    setPage("details");
+  };
 
   const renderPage = () => {
     if (page === "jobs") {
@@ -17,48 +34,90 @@ export default function App() {
         <View style={styles.page}>
           <Text style={styles.title}>💼 البحث عن عمل</Text>
 
-          <TouchableOpacity
-            style={styles.jobCard}
-            onPress={() => setPage("details")}
-          >
-            <Text style={styles.jobTitle}>Agent de sécurité</Text>
-            <Text style={styles.jobInfo}>🇧🇪 Belgique</Text>
-            <Text style={styles.jobInfo}>🕐 Temps plein</Text>
-            <Text style={styles.more}>عرض التفاصيل ›</Text>
-          </TouchableOpacity>
+          <TextInput
+            style={styles.search}
+            placeholder="ابحث عن وظيفة، دولة أو مدينة..."
+            value={search}
+            onChangeText={setSearch}
+          />
 
-          <TouchableOpacity
-            style={styles.jobCard}
-            onPress={() => setPage("details")}
-          >
-            <Text style={styles.jobTitle}>Serveur / Serveuse</Text>
-            <Text style={styles.jobInfo}>🇧🇪 Belgique</Text>
-            <Text style={styles.jobInfo}>🍽️ Hôtellerie</Text>
-            <Text style={styles.more}>عرض التفاصيل ›</Text>
-          </TouchableOpacity>
+          {filteredJobs.map((job) => (
+            <TouchableOpacity
+              key={job.id}
+              style={styles.jobCard}
+              onPress={() => openJob(job)}
+            >
+              <Text style={styles.jobTitle}>{job.title}</Text>
+
+              <Text style={styles.jobInfo}>
+                🌍 {job.country} - {job.city}
+              </Text>
+
+              <Text style={styles.jobInfo}>
+                💼 {job.category}
+              </Text>
+
+              <Text style={styles.jobInfo}>
+                📋 {job.contract}
+              </Text>
+
+              <Text style={styles.more}>
+                عرض التفاصيل ›
+              </Text>
+            </TouchableOpacity>
+          ))}
+
+          {filteredJobs.length === 0 && (
+            <Text style={styles.empty}>
+              لم نجد وظائف مطابقة لبحثك.
+            </Text>
+          )}
         </View>
       );
     }
 
-    if (page === "details") {
+    if (page === "details" && selectedJob) {
       return (
         <View style={styles.page}>
           <TouchableOpacity onPress={() => setPage("jobs")}>
             <Text style={styles.back}>‹ العودة للوظائف</Text>
           </TouchableOpacity>
 
-          <Text style={styles.title}>Agent de sécurité</Text>
-
-          <Text style={styles.description}>
-            فرصة عمل في مجال الأمن والحراسة في بلجيكا.
+          <Text style={styles.title}>
+            {selectedJob.title}
           </Text>
 
-          <Text style={styles.info}>📍 Belgique</Text>
-          <Text style={styles.info}>💼 Temps plein</Text>
-          <Text style={styles.info}>🛡️ Sécurité</Text>
+          <Text style={styles.info}>
+            🌍 {selectedJob.country}
+          </Text>
 
-          <TouchableOpacity style={styles.applyButton}>
-            <Text style={styles.applyText}>📩 التقديم المباشر</Text>
+          <Text style={styles.info}>
+            📍 {selectedJob.city}
+          </Text>
+
+          <Text style={styles.info}>
+            💼 {selectedJob.category}
+          </Text>
+
+          <Text style={styles.info}>
+            📋 {selectedJob.contract}
+          </Text>
+
+          <Text style={styles.info}>
+            💰 {selectedJob.salary}
+          </Text>
+
+          <Text style={styles.description}>
+            {selectedJob.description}
+          </Text>
+
+          <TouchableOpacity
+            style={styles.applyButton}
+            onPress={() => alert("سيتم ربط زر التقديم بصفحة التقديم لاحقًا.")}
+          >
+            <Text style={styles.applyText}>
+              📩 التقديم المباشر
+            </Text>
           </TouchableOpacity>
         </View>
       );
@@ -68,9 +127,28 @@ export default function App() {
       return (
         <View style={styles.page}>
           <Text style={styles.title}>✈️ السفر</Text>
+
           <Text style={styles.description}>
-            معلومات السفر، التأشيرات والمواعيد.
+            معلومات السفر والتأشيرات والمواعيد.
           </Text>
+
+          <TouchableOpacity style={styles.card}>
+            <Text style={styles.cardTitle}>
+              🇧🇪 السفر إلى بلجيكا
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.card}>
+            <Text style={styles.cardTitle}>
+              🇫🇷 السفر إلى فرنسا
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.card}>
+            <Text style={styles.cardTitle}>
+              🇮🇹 السفر إلى إيطاليا
+            </Text>
+          </TouchableOpacity>
         </View>
       );
     }
@@ -79,9 +157,16 @@ export default function App() {
       return (
         <View style={styles.page}>
           <Text style={styles.title}>📄 السيرة الذاتية</Text>
+
           <Text style={styles.description}>
-            إنشاء وإدارة السيرة الذاتية الخاصة بك.
+            أنشئ سيرتك الذاتية واحفظها لاستخدامها عند التقديم على الوظائف.
           </Text>
+
+          <TouchableOpacity style={styles.mainButton}>
+            <Text style={styles.mainButtonText}>
+              إنشاء CV
+            </Text>
+          </TouchableOpacity>
         </View>
       );
     }
@@ -90,6 +175,7 @@ export default function App() {
       return (
         <View style={styles.page}>
           <Text style={styles.title}>👤 حسابي</Text>
+
           <Text style={styles.description}>
             الملف الشخصي وإعدادات الحساب.
           </Text>
@@ -175,8 +261,8 @@ const styles = StyleSheet.create({
   logo: {
     fontSize: 32,
     fontWeight: "bold",
-    marginTop: 50,
     textAlign: "center",
+    marginTop: 50,
   },
 
   title: {
@@ -188,8 +274,59 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 18,
     textAlign: "center",
-    marginBottom: 50,
     color: "#555",
+    marginBottom: 50,
+  },
+
+  search: {
+    backgroundColor: "white",
+    borderRadius: 12,
+    padding: 15,
+    fontSize: 16,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: "#ddd",
+  },
+
+  jobCard: {
+    backgroundColor: "white",
+    padding: 20,
+    borderRadius: 15,
+    marginBottom: 15,
+  },
+
+  jobTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+
+  jobInfo: {
+    fontSize: 16,
+    marginBottom: 6,
+  },
+
+  more: {
+    color: "#1565c0",
+    fontWeight: "bold",
+    marginTop: 10,
+  },
+
+  empty: {
+    textAlign: "center",
+    fontSize: 17,
+    marginTop: 30,
+  },
+
+  back: {
+    color: "#1565c0",
+    fontSize: 17,
+    marginBottom: 25,
+  },
+
+  info: {
+    fontSize: 18,
+    marginBottom: 15,
   },
 
   description: {
@@ -227,41 +364,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
 
-  jobCard: {
-    backgroundColor: "white",
-    padding: 20,
-    borderRadius: 15,
-    marginBottom: 15,
-  },
-
-  jobTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    marginBottom: 10,
-  },
-
-  jobInfo: {
-    fontSize: 16,
-    marginBottom: 6,
-  },
-
-  more: {
-    color: "#1565c0",
-    marginTop: 12,
-    fontWeight: "bold",
-  },
-
-  back: {
-    color: "#1565c0",
-    fontSize: 17,
-    marginBottom: 25,
-  },
-
-  info: {
-    fontSize: 18,
-    marginBottom: 15,
-  },
-
   applyButton: {
     backgroundColor: "#168a45",
     padding: 18,
@@ -272,6 +374,18 @@ const styles = StyleSheet.create({
   applyText: {
     color: "white",
     textAlign: "center",
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+
+  card: {
+    backgroundColor: "white",
+    padding: 20,
+    borderRadius: 14,
+    marginBottom: 15,
+  },
+
+  cardTitle: {
     fontSize: 18,
     fontWeight: "bold",
   },
